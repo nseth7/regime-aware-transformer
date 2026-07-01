@@ -1,0 +1,44 @@
+# Default configuration — mirrors the dataclass defaults in src/rat/config.py.
+# The CLI scripts (scripts/*.py) currently take arguments directly rather
+# than parsing this file, but it's kept here as the single source of truth
+# for the values used to produce the results in the paper.
+
+data:
+  start_date: "2018-01-01"
+  end_date: "2026-01-01"
+  train_end: "2022-12-31"      # train: 2018-2022
+  val_end: "2023-12-31"        # val: 2023 | test: 2024-2025
+  lookback: 60
+  horizon: 5
+  max_ffill_gap: 5
+  macro_start: "2016-01-01"
+  exclude_price_levels: false  # set true to match the paper's stated leakage-avoidance step
+  output_dir: "data"
+
+model:
+  macro_features: 12
+  d_model: 32
+  nhead: 4
+  num_layers: 1
+  z_dim: 32
+  dropout: 0.1
+
+train:
+  model_name: "regime"          # regime | baseline | macro_concat
+  batch_size: 256
+  lr: 0.0001
+  weight_decay: 0.01
+  max_epochs: 50
+  patience: 10
+  grad_clip_norm: 1.0
+  checkpoint_dir: "checkpoints"
+  seed: 42
+
+backtest:
+  horizon_days: 5
+  trading_days_per_year: 252
+  top_k_values: [30, 50, 100]
+  rebalance_frequencies: [5, 10, 21]
+  cost_bps_levels: [0, 5, 10, 20]
+  headline_top_k: 30
+  headline_rebalance: 21

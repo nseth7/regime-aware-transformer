@@ -1,0 +1,27 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+
+# Data / artifacts (regenerate via scripts/prepare_data.py, scripts/train.py)
+data/
+checkpoints/
+results/
+*.npz
+*.pkl
+*.pt
+
+# Notebooks checkpoints
+.ipynb_checkpoints/
+
+# OS / editor
+.DS_Store
+.vscode/
+.idea/
+
+# Env
+.env
