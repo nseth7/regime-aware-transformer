@@ -75,9 +75,11 @@ def eval_epoch(model, loader, loss_fn, device) -> dict:
     dir_acc = ((preds > 0) == (trues > 0)).mean()
 
     df = pd.DataFrame({"date": all_dates, "pred": preds, "true": trues})
-    daily_ic = df.groupby("date").apply(
-        lambda g: g["pred"].corr(g["true"], method="spearman") if len(g) >= 10 else np.nan
-    ).dropna()
+    daily_ic = (
+        df.groupby("date")
+        .apply(lambda g: g["pred"].corr(g["true"], method="spearman") if len(g) >= 10 else np.nan)
+        .dropna()
+    )
 
     return {
         "loss": total_loss / len(loader),
@@ -96,8 +98,10 @@ def build_model(model_name: str, n_stock_features: int, n_macro_features: int, m
     if model_cfg is not None:
         if model_name == "regime":
             kwargs.update(
-                d_model=model_cfg.d_model, nhead=model_cfg.nhead,
-                num_layers=model_cfg.num_layers, z_dim=model_cfg.z_dim,
+                d_model=model_cfg.d_model,
+                nhead=model_cfg.nhead,
+                num_layers=model_cfg.num_layers,
+                z_dim=model_cfg.z_dim,
                 dropout=model_cfg.dropout,
             )
     return cls(**kwargs)
@@ -112,15 +116,28 @@ def train(data_dir: str, cfg: TrainConfig, model_cfg=None) -> list[dict]:
     val_ds = RegimeDataset(os.path.join(data_dir, "val_cs.npz"))
 
     train_loader = DataLoader(
-        train_ds, batch_size=cfg.batch_size, shuffle=True,
-        collate_fn=collate, num_workers=2, pin_memory=True,
+        train_ds,
+        batch_size=cfg.batch_size,
+        shuffle=True,
+        collate_fn=collate,
+        num_workers=2,
+        pin_memory=True,
     )
     val_loader = DataLoader(
-        val_ds, batch_size=cfg.batch_size, shuffle=False,
-        collate_fn=collate, num_workers=2, pin_memory=True,
+        val_ds,
+        batch_size=cfg.batch_size,
+        shuffle=False,
+        collate_fn=collate,
+        num_workers=2,
+        pin_memory=True,
     )
-    logger.info("Train: %d samples (%d batches) | Val: %d samples (%d batches)",
-                len(train_ds), len(train_loader), len(val_ds), len(val_loader))
+    logger.info(
+        "Train: %d samples (%d batches) | Val: %d samples (%d batches)",
+        len(train_ds),
+        len(train_loader),
+        len(val_ds),
+        len(val_loader),
+    )
 
     model = build_model(cfg.model_name, train_ds.n_stock_features, train_ds.n_macro_features, model_cfg)
     model = model.to(device)
@@ -148,9 +165,12 @@ def train(data_dir: str, cfg: TrainConfig, model_cfg=None) -> list[dict]:
 
         scheduler.step(val_metrics["loss"])
 
-        record = {"epoch": epoch, "elapsed_s": elapsed,
-                  **{f"train_{k}": v for k, v in train_metrics.items()},
-                  **{f"val_{k}": v for k, v in val_metrics.items()}}
+        record = {
+            "epoch": epoch,
+            "elapsed_s": elapsed,
+            **{f"train_{k}": v for k, v in train_metrics.items()},
+            **{f"val_{k}": v for k, v in val_metrics.items()},
+        }
         history.append(record)
 
         if val_metrics["ic"] > best_val_ic:
@@ -159,30 +179,44 @@ def train(data_dir: str, cfg: TrainConfig, model_cfg=None) -> list[dict]:
         improved = val_metrics["loss"] < best_val_loss
         logger.info(
             "epoch %3d | train_loss %.4f | val_loss %.4f | dir_acc %5.1f%% | ic %+.4f | %5.1fs %s",
-            epoch, train_metrics["loss"], val_metrics["loss"],
-            val_metrics["dir_acc"] * 100, val_metrics["ic"], elapsed,
+            epoch,
+            train_metrics["loss"],
+            val_metrics["loss"],
+            val_metrics["dir_acc"] * 100,
+            val_metrics["ic"],
+            elapsed,
             "*" if improved else "",
         )
 
         if improved:
             best_val_loss = val_metrics["loss"]
             patience_count = 0
-            torch.save({
-                "epoch": epoch, "model_name": cfg.model_name,
-                "state_dict": model.state_dict(),
-                "n_stock_features": train_ds.n_stock_features,
-                "n_macro_features": train_ds.n_macro_features,
-                "val_loss": val_metrics["loss"], "val_mae": val_metrics["mae"],
-                "dir_acc": val_metrics["dir_acc"], "ic": val_metrics["ic"],
-                "history": history,
-            }, checkpoint_path)
+            torch.save(
+                {
+                    "epoch": epoch,
+                    "model_name": cfg.model_name,
+                    "state_dict": model.state_dict(),
+                    "n_stock_features": train_ds.n_stock_features,
+                    "n_macro_features": train_ds.n_macro_features,
+                    "val_loss": val_metrics["loss"],
+                    "val_mae": val_metrics["mae"],
+                    "dir_acc": val_metrics["dir_acc"],
+                    "ic": val_metrics["ic"],
+                    "history": history,
+                },
+                checkpoint_path,
+            )
         else:
             patience_count += 1
             if patience_count >= cfg.patience:
-                logger.info("Early stopping at epoch %d (no improvement for %d epochs)",
-                            epoch, cfg.patience)
+                logger.info("Early stopping at epoch %d (no improvement for %d epochs)", epoch, cfg.patience)
                 break
 
-    logger.info("Best val loss: %.5f | Best val IC: %+.4f (epoch %d) | Checkpoint: %s",
-                best_val_loss, best_val_ic, best_ic_epoch, checkpoint_path)
+    logger.info(
+        "Best val loss: %.5f | Best val IC: %+.4f (epoch %d) | Checkpoint: %s",
+        best_val_loss,
+        best_val_ic,
+        best_ic_epoch,
+        checkpoint_path,
+    )
     return history

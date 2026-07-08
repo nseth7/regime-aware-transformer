@@ -24,5 +24,5 @@ def ic_loss(pred: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
     pred = pred - pred.mean()
     y = y - y.mean()
     num = (pred * y).sum()
-    den = torch.sqrt((pred ** 2).sum() * (y ** 2).sum() + 1e-8)
+    den = torch.sqrt((pred**2).sum() * (y**2).sum() + 1e-8)
     return -num / den

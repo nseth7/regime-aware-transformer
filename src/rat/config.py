@@ -14,13 +14,13 @@ from dataclasses import dataclass
 class DataConfig:
     start_date: str = "2018-01-01"
     end_date: str = "2026-01-01"
-    train_end: str = "2022-12-31"          # train:  2018-2022
-    val_end: str = "2023-12-31"            # val:    2023 | test: 2024-2025
-    lookback: int = 60                     # days of history per sample
-    horizon: int = 5                       # days-ahead prediction target
-    max_ffill_gap: int = 5                 # max consecutive NaNs to forward-fill
-    macro_start: str = "2016-01-01"        # earlier start so rolling macro feats warm up
-    min_history_days: int = 128            # lookback + horizon + indicator warmup
+    train_end: str = "2022-12-31"  # train:  2018-2022
+    val_end: str = "2023-12-31"  # val:    2023 | test: 2024-2025
+    lookback: int = 60  # days of history per sample
+    horizon: int = 5  # days-ahead prediction target
+    max_ffill_gap: int = 5  # max consecutive NaNs to forward-fill
+    macro_start: str = "2016-01-01"  # earlier start so rolling macro feats warm up
+    min_history_days: int = 128  # lookback + horizon + indicator warmup
     # If True, raw price/volume levels (Open, High, Low, Close, Volume) are
     # dropped from the stock feature matrix before windowing, matching the
     # "non-stationary levels excluded to avoid leakage" description in the
@@ -44,7 +44,7 @@ class ModelConfig:
 
 @dataclass
 class TrainConfig:
-    model_name: str = "regime"             # "regime" | "baseline" | "macro_concat"
+    model_name: str = "regime"  # "regime" | "baseline" | "macro_concat"
     batch_size: int = 256
     lr: float = 1e-4
     weight_decay: float = 1e-2
@@ -78,20 +78,37 @@ MACRO_SOURCES = {
 }
 
 MACRO_COLS = [
-    "VIX", "TNX", "IRX", "TermSpread",
+    "VIX",
+    "TNX",
+    "IRX",
+    "TermSpread",
     "VIX_zscore",
-    "SPY_ret_5d", "SPY_ret_21d", "SPY_ret_63d",
-    "HYG_ret", "Oil_ret", "Gold_ret", "DXY_ret",
+    "SPY_ret_5d",
+    "SPY_ret_21d",
+    "SPY_ret_63d",
+    "HYG_ret",
+    "Oil_ret",
+    "Gold_ret",
+    "DXY_ret",
 ]
 
 PRICE_LEVEL_COLS = ["Open", "High", "Low", "Close", "Volume"]
 
 TECHNICAL_COLS = [
-    "EMA_10", "EMA_30", "MACD", "ADX",
-    "RSI_14", "STOCH_k",
-    "BB_width", "ATR_14",
+    "EMA_10",
+    "EMA_30",
+    "MACD",
+    "ADX",
+    "RSI_14",
+    "STOCH_k",
+    "BB_width",
+    "ATR_14",
     "OBV",
-    "ret_1d", "ret_5d", "ret_21d", "logret", "rvol_21d",
+    "ret_1d",
+    "ret_5d",
+    "ret_21d",
+    "logret",
+    "rvol_21d",
 ]
 
 # Full feature set as produced by the original pipeline (19 columns).

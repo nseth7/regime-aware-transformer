@@ -23,8 +23,7 @@ def test_macro_concat_gets_near_zero_regime_gradient_when_macro_is_constant():
     loss = ic_loss(pred, y)
     loss.backward()
     concat_grad = sum(
-        p.grad.abs().sum().item()
-        for p in concat_model.regime_encoder.parameters() if p.grad is not None
+        p.grad.abs().sum().item() for p in concat_model.regime_encoder.parameters() if p.grad is not None
     )
 
     rat_model = RegimeAwareTransformer(stock_features=17, macro_features=12)
@@ -32,8 +31,7 @@ def test_macro_concat_gets_near_zero_regime_gradient_when_macro_is_constant():
     loss = ic_loss(pred, y)
     loss.backward()
     rat_grad = sum(
-        p.grad.abs().sum().item()
-        for p in rat_model.regime_encoder.parameters() if p.grad is not None
+        p.grad.abs().sum().item() for p in rat_model.regime_encoder.parameters() if p.grad is not None
     )
 
     # RAT's conditioning breaks cross-sample symmetry (feature gate scales

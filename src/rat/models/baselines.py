@@ -39,8 +39,12 @@ class BaselineTransformer(nn.Module):
         self.input_norm = nn.LayerNorm(d_model)
 
         encoder_layer = nn.TransformerEncoderLayer(
-            d_model=d_model, nhead=nhead, dim_feedforward=d_model * 4,
-            dropout=dropout, batch_first=True, norm_first=True,
+            d_model=d_model,
+            nhead=nhead,
+            dim_feedforward=d_model * 4,
+            dropout=dropout,
+            batch_first=True,
+            norm_first=True,
         )
         self.transformer = nn.TransformerEncoder(encoder_layer, num_layers=num_layers)
 
@@ -88,8 +92,12 @@ class MacroConcatTransformer(nn.Module):
         self.input_norm = nn.LayerNorm(d_model)
 
         encoder_layer = nn.TransformerEncoderLayer(
-            d_model=d_model, nhead=nhead, dim_feedforward=d_model * 4,
-            dropout=dropout, batch_first=True, norm_first=False,
+            d_model=d_model,
+            nhead=nhead,
+            dim_feedforward=d_model * 4,
+            dropout=dropout,
+            batch_first=True,
+            norm_first=False,
         )
         self.transformer = nn.TransformerEncoder(encoder_layer, num_layers=num_layers)
 
@@ -103,13 +111,13 @@ class MacroConcatTransformer(nn.Module):
     def forward(self, x: torch.Tensor, macro: torch.Tensor) -> torch.Tensor:
         B, T, _ = x.shape
         x = self.revin(x)
-        z = self.regime_encoder(macro)                    # (B, z_dim)
-        z_expanded = z.unsqueeze(1).expand(B, T, -1)       # (B, T, z_dim)
-        x_combined = torch.cat([x, z_expanded], dim=-1)    # (B, T, F+z_dim)
+        z = self.regime_encoder(macro)  # (B, z_dim)
+        z_expanded = z.unsqueeze(1).expand(B, T, -1)  # (B, T, z_dim)
+        x_combined = torch.cat([x, z_expanded], dim=-1)  # (B, T, F+z_dim)
 
         h = self.input_proj(x_combined)
         h = self.pos_enc(h)
         h = self.input_norm(h)
         h = self.transformer(h)
-        h = h.mean(dim=1)                                  # mean pooling
+        h = h.mean(dim=1)  # mean pooling
         return self.head(h).squeeze(-1)

@@ -19,7 +19,7 @@ import yfinance as yf
 
 from rat.config import BacktestConfig, ModelConfig, TrainConfig
 from rat.evaluation.backtest import sweep_backtest
-from rat.evaluation.inference import load_checkpoint, build_prediction_frame
+from rat.evaluation.inference import build_prediction_frame, load_checkpoint
 from rat.evaluation.plots import plot_model_comparison, plot_vs_benchmark
 from rat.training.train import get_device, train
 
@@ -31,8 +31,9 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--data-dir", default="data")
     p.add_argument("--checkpoint-dir", default="checkpoints")
     p.add_argument("--out-dir", default="results")
-    p.add_argument("--skip-training", action="store_true",
-                    help="Assume checkpoints already exist; only run backtests.")
+    p.add_argument(
+        "--skip-training", action="store_true", help="Assume checkpoints already exist; only run backtests."
+    )
     return p.parse_args()
 
 
@@ -64,20 +65,29 @@ def main() -> None:
             headline_by_model[model_name] = all_results[key]
 
     best_model = max(headline_by_model, key=lambda n: headline_by_model[n]["net_sharpe"])
-    logging.info("Best model @ headline config: %s (Sharpe=%+.3f)",
-                 best_model, headline_by_model[best_model]["net_sharpe"])
+    logging.info(
+        "Best model @ headline config: %s (Sharpe=%+.3f)",
+        best_model,
+        headline_by_model[best_model]["net_sharpe"],
+    )
 
     plot_model_comparison(
-        headline_by_model, os.path.join(args.out_dir, "compare_equity.png"),
+        headline_by_model,
+        os.path.join(args.out_dir, "compare_equity.png"),
         title=f"Model Comparison (top_k={bt_cfg.headline_top_k}, reb={bt_cfg.headline_rebalance}d, "
-              f"cost={bt_cfg.cost_bps_levels[-1]}bps)",
+        f"cost={bt_cfg.cost_bps_levels[-1]}bps)",
     )
 
     # Best model vs SPY buy-and-hold
     best_bt = headline_by_model[best_model]["bt"]
     test_dates = pd.to_datetime(sorted(best_bt["date"].unique()))
-    spy = yf.download("SPY", start=test_dates.min(), end=test_dates.max() + pd.Timedelta(days=2),
-                       progress=False, auto_adjust=True)
+    spy = yf.download(
+        "SPY",
+        start=test_dates.min(),
+        end=test_dates.max() + pd.Timedelta(days=2),
+        progress=False,
+        auto_adjust=True,
+    )
     if isinstance(spy.columns, pd.MultiIndex):
         spy.columns = spy.columns.get_level_values(0)
     spy = spy[["Close"]].dropna()
@@ -87,7 +97,9 @@ def main() -> None:
     spy_equity = spy_equity / spy_equity.iloc[0]
 
     plot_vs_benchmark(
-        best_bt, spy_equity, os.path.join(args.out_dir, "best_vs_spy.png"),
+        best_bt,
+        spy_equity,
+        os.path.join(args.out_dir, "best_vs_spy.png"),
         strategy_label=best_model,
     )
 

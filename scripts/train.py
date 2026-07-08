@@ -35,9 +35,14 @@ def main() -> None:
     args = parse_args()
 
     train_cfg = TrainConfig(
-        model_name=args.model, batch_size=args.batch_size, lr=args.lr,
-        weight_decay=args.weight_decay, max_epochs=args.max_epochs,
-        patience=args.patience, checkpoint_dir=args.checkpoint_dir, seed=args.seed,
+        model_name=args.model,
+        batch_size=args.batch_size,
+        lr=args.lr,
+        weight_decay=args.weight_decay,
+        max_epochs=args.max_epochs,
+        patience=args.patience,
+        checkpoint_dir=args.checkpoint_dir,
+        seed=args.seed,
     )
     model_cfg = ModelConfig()
     train(args.data_dir, train_cfg, model_cfg)
