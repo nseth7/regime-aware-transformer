@@ -7,7 +7,7 @@ run can be fully reproduced from one YAML file (see configs/default.yaml).
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 
 @dataclass
