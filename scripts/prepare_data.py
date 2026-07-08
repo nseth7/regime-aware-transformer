@@ -11,8 +11,9 @@ from __future__ import annotations
 import argparse
 import logging
 
-from rat.config import DataConfig
 from rat.data.pipeline import run
+
+from rat.config import DataConfig
 
 
 def parse_args() -> argparse.Namespace:
